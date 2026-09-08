@@ -1,3 +1,4 @@
 streamlit
+rdkit
 plotly
 pandas
