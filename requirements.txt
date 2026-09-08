@@ -1,5 +1,4 @@
-Plaintext
 streamlit
-rdkit
+rdkit-pypi
 plotly
 pandas
