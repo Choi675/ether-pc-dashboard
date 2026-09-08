@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from rdkit import Chem
+from rdkit.Chem.Draw import rdMolDraw2D
 
 # ==============================================================================
 # 1. 페이지 환경설정
@@ -13,12 +15,13 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. FRAGMENT_DATABASE (RDKit 엔진이 정밀 렌더링한 고해상도 화학 구조식 탑재)
+# 2. FRAGMENT_DATABASE (오직 순수 SMILES와 메타데이터만 유지)
 # ==============================================================================
 FRAGMENT_DATABASE = {
     "Precursor [M+Na]+": {
         "name": "Precursor Ion [M+Na]+",
         "theoretical_mz": 814.5721,
+        "smiles": "C[N+](C)(C)CCOP(=O)([O-])OCC(CO[*:1])OC(=O)[*:2].[Na+]",
         "formula": "[C46H82NO7P + Na]+",
         "cleavage_mechanism": "미해리 생존 온전한 나트륨 부착 전구체 분자종",
         "reference": "Colsch et al. (Fig 1); Han & Gross (Scheme I); Al-Saad et al. (Scheme 1c)",
@@ -31,40 +34,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 814.5919, "rel_abundance": 1.00},
             "50eV": {"observed_mz": 814.5225, "rel_abundance": 1.41},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<path d='M 20.0,110.0 L 32.0,100.0' stroke='#000' stroke-width='2'/>
-<text x='35' y='98' font-size='13' fill='#0000FF' font-weight='bold'>N⁺(Me)₃</text>
-<path d='M 58.0,105.0 L 75.0,120.0' stroke='#000' stroke-width='2'/>
-<path d='M 75.0,120.0 L 105.0,115.0' stroke='#000' stroke-width='2'/>
-<path d='M 105.0,115.0 L 115.0,125.0' stroke='#000' stroke-width='2'/>
-<text x='116' y='135' font-size='13' fill='#FF0000'>O</text>
-<path d='M 128.0,132.0 L 140.0,130.0' stroke='#FF0000' stroke-width='2'/>
-<text x='142' y='134' font-size='13' fill='#FF7F00' font-weight='bold'>P</text>
-<path d='M 146.0,122.0 L 146.0,108.0' stroke='#FF7F00' stroke-width='2'/>
-<text x='142' y='104' font-size='12' fill='#FF0000'>O⁻</text>
-<path d='M 149.0,136.0 L 149.0,150.0' stroke='#FF7F00' stroke-width='2'/>
-<text x='144' y='162' font-size='12' fill='#FF0000'>=O</text>
-<path d='M 154.0,129.0 L 168.0,127.0' stroke='#FF7F00' stroke-width='2'/>
-<text x='170' y='130' font-size='13' fill='#FF0000'>O</text>
-<path d='M 180.0,122.0 L 190.0,105.0' stroke='#000' stroke-width='2'/>
-<path d='M 190.0,105.0 L 218.0,100.0' stroke='#000' stroke-width='2'/>
-<path d='M 218.0,100.0 L 228.0,75.0' stroke='#000' stroke-width='2'/>
-<text x='235' y='72' font-size='13' fill='#FF0000'>O</text>
-<path d='M 245.0,68.0 L 255.0,55.0' stroke='#000' stroke-width='2'/>
-<text x='258' y='52' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
-<path d='M 218.0,100.0 L 224.0,115.0' stroke='#000' stroke-width='2'/>
-<text x='225' y='128' font-size='13' fill='#FF0000'>O</text>
-<path d='M 225.0,132.0 L 220.0,146.0' stroke='#000' stroke-width='2'/>
-<text x='195' y='152' font-size='12' fill='#FF0000'>O=</text>
-<path d='M 220.0,146.0 L 230.0,160.0' stroke='#000' stroke-width='2'/>
-<text x='234' y='168' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
-<text x='155' y='45' font-size='14' fill='#15803D' font-weight='bold'>Na⁺</text>
-</svg>"""
     },
     "[M+Na - TMA]+": {
         "name": "[M+Na - TMA]+",
         "theoretical_mz": 755.4987,
+        "smiles": "O=C(OC(COP1(=O)OCCO1)CO[*:1])[*:2].[Na+]",
         "formula": "[M+Na - C3H9N]+",
         "cleavage_mechanism": "인산 음이온의 분자내 친핵 공격을 통한 5원자 환형 인산 형성 및 트리메틸아민(-59.07 Da) 탈락",
         "reference": "Colsch et al. (Scheme 6a); Han & Gross (Scheme I, Fig 2); Al-Saad et al. (Table 1 Ion B, Scheme 2)",
@@ -77,30 +51,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 755.4999, "rel_abundance": 23.32},
             "50eV": {"observed_mz": 755.4677, "rel_abundance": 0.16},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<text x='25' y='50' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
-<path d='M 45.0,46.0 L 60.0,55.0' stroke='#000' stroke-width='2'/>
-<text x='63' y='60' font-size='13' fill='#FF0000'>O</text>
-<path d='M 74.0,63.0 L 92.0,80.0' stroke='#000' stroke-width='2'/>
-<path d='M 92.0,80.0 L 122.0,75.0' stroke='#000' stroke-width='2'/>
-<path d='M 122.0,75.0 L 125.0,92.0' stroke='#000' stroke-width='2'/>
-<text x='123' y='104' font-size='13' fill='#FF0000'>O</text>
-<path d='M 120.0,108.0 L 98.0,125.0' stroke='#000' stroke-width='2'/>
-<text x='78' y='136' font-size='12' fill='#FF0000'>O=</text>
-<path d='M 98.0,125.0 L 105.0,148.0' stroke='#000' stroke-width='2'/>
-<text x='106' y='160' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
-<path d='M 122.0,75.0 L 140.0,62.0' stroke='#000' stroke-width='2'/>
-<text x='144' y='60' font-size='13' fill='#FF0000'>O</text>
-<path d='M 157.0,60.0 L 175.0,68.0' stroke='#FF0000' stroke-width='2'/>
-<polygon points='180,72 210,55 235,75 220,105 185,100' fill='none' stroke='#2563EB' stroke-width='2'/>
-<text x='198' y='86' font-size='12' fill='#FF7F00' font-weight='bold'>P=O</text>
-<text x='245' y='60' font-size='13' fill='#15803D' font-weight='bold'>Na⁺</text>
-</svg>"""
     },
     "[M+Na - 183]+": {
         "name": "[M+Na - 183]+",
         "theoretical_mz": 631.5051,
+        "smiles": "C=C(CO[*:1])OC(=O)[*:2].[Na+]",
         "formula": "[M+Na - C5H14NO4P]+",
         "cleavage_mechanism": "sn-3 Non-sodiated Phosphocholine(-183.07 Da) 중성 탈락 (소듐 유지 에놀 에테르/에스터)",
         "reference": "Godzien et al. (Table 1); Al-Saad et al. (Table 1 Ion C, Scheme 2); Han & Gross (Scheme I Pathway 4)",
@@ -113,27 +68,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 631.5063, "rel_abundance": 100.00},
             "50eV": {"observed_mz": 631.5108, "rel_abundance": 6.55},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<text x='25' y='80' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
-<path d='M 45.0,76.0 L 68.0,76.0' stroke='#000' stroke-width='2'/>
-<text x='70' y='80' font-size='13' fill='#FF0000'>O</text>
-<path d='M 82.0,80.0 L 110.0,105.0' stroke='#000' stroke-width='2'/>
-<path d='M 110.0,105.0 L 145.0,105.0' stroke='#000' stroke-width='2'/>
-<path d='M 110.0,101.0 L 145.0,101.0' stroke='#000' stroke-width='2'/>
-<text x='148' y='108' font-size='13' fill='#000' font-weight='bold'>=CH₂</text>
-<path d='M 110.0,105.0 L 115.0,78.0' stroke='#000' stroke-width='2'/>
-<text x='112' y='72' font-size='13' fill='#FF0000'>O</text>
-<path d='M 122.0,65.0 L 148.0,55.0' stroke='#000' stroke-width='2'/>
-<text x='152' y='78' font-size='12' fill='#FF0000'>=O</text>
-<path d='M 148.0,55.0 L 175.0,42.0' stroke='#000' stroke-width='2'/>
-<text x='180' y='46' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
-<text x='145' y='145' font-size='14' fill='#15803D' font-weight='bold'>Na⁺</text>
-</svg>"""
     },
     "[M+Na - 205]+": {
         "name": "[M+Na - 205]+",
         "theoretical_mz": 609.5242,
+        "smiles": "[*:1]OCC1C[O+]=C([*:2])O1",
         "formula": "[M+Na - C5H14NO4PNa]+",
         "cleavage_mechanism": "sn-3 Sodiated Phosphocholine(-205.05 Da) 중성 탈락 및 sn-2 아실 카보닐의 백본 분자내 고리화(1,3-dioxolan-2-ylium 양이온 형성)",
         "reference": "Han & Gross (Fig 2b/c, Scheme I Pathway 3); Al-Saad et al. (Table 1 Ion D, Scheme 5); Colsch et al. (Table 1a)",
@@ -146,24 +85,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 609.5264, "rel_abundance": 8.39},
             "50eV": {"observed_mz": 609.5359, "rel_abundance": 0.37},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<text x='20' y='75' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
-<path d='M 40.0,72.0 L 62.0,72.0' stroke='#000' stroke-width='2'/>
-<text x='65' y='76' font-size='13' fill='#FF0000'>O</text>
-<path d='M 78.0,78.0 L 105.0,105.0' stroke='#000' stroke-width='2'/>
-<polygon points='105,105 130,80 168,95 158,132 118,132' fill='none' stroke='#2563EB' stroke-width='2'/>
-<text x='125' y='82' font-size='13' fill='#FF0000'>O</text>
-<text x='152' y='132' font-size='13' fill='#FF0000'>O</text>
-<text x='172' y='110' font-size='15' fill='#DC2626' font-weight='bold'>⁺</text>
-<path d='M 168.0,95.0 L 205.0,80.0' stroke='#000' stroke-width='2'/>
-<text x='210' y='84' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
-<text x='80' y='160' font-size='11' fill='#15803D' font-weight='bold'>1,3-dioxolan-2-ylium cation</text>
-</svg>"""
     },
     "Protonated Phosphocholine": {
         "name": "Protonated Phosphocholine",
         "theoretical_mz": 184.0733,
+        "smiles": "C[N+](C)(C)CCOP(=O)(O)O",
         "formula": "C5H15NO4P+",
         "cleavage_mechanism": "sn-3 Phosphodiester 결합 해리를 통한 포스포콜린 극성 머리그룹 양이온 형성",
         "reference": "Colsch et al. (Table 1a, Fig 3d); Godzien et al. (Table 1); Han & Gross (Fig 2); Al-Saad et al. (Fig 2, Scheme 8)",
@@ -176,19 +102,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 184.0733, "rel_abundance": 2.53},
             "50eV": {"observed_mz": 184.0744, "rel_abundance": 6.34},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<text x='25' y='95' font-size='12' fill='#FF7F00' font-weight='bold'>HO-P(=O)(OH)-O</text>
-<path d='M 130.0,90.0 L 165.0,90.0' stroke='#000' stroke-width='2'/>
-<text x='170' y='95' font-size='12'>-CH₂CH₂-</text>
-<path d='M 220.0,90.0 L 235.0,90.0' stroke='#000' stroke-width='2'/>
-<text x='238' y='95' font-size='13' fill='#0000FF' font-weight='bold'>N⁺(Me)₃</text>
-<text x='80' y='145' font-size='12' fill='#64748B'>m/z 184.0733 (Phosphocholine)</text>
-</svg>"""
     },
     "Sodiated Cyclophosphane": {
         "name": "Sodiated Cyclophosphane",
         "theoretical_mz": 146.9817,
+        "smiles": "O=P1(O)OCCO1.[Na+]",
         "formula": "C2H4O4PNa+",
         "cleavage_mechanism": "헤드그룹 유래 5원자 환형 고리형 인산(1,3,2-dioxaphospholane 2-oxide) 나트륨 착이온",
         "reference": "Colsch et al. (Scheme 6c/d); Godzien et al. (Table 1); Han & Gross (Scheme I); Al-Saad et al. (Table 1 Ion L, Scheme 2)",
@@ -201,17 +119,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 146.9823, "rel_abundance": 59.85},
             "50eV": {"observed_mz": 146.9822, "rel_abundance": 100.00},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<polygon points='80,90 110,65 140,80 130,115 95,115' fill='none' stroke='#2563EB' stroke-width='2'/>
-<text x='105' y='95' font-size='12' fill='#FF7F00' font-weight='bold'>P=O</text>
-<text x='155' y='95' font-size='14' fill='#15803D' font-weight='bold'>• Na⁺</text>
-<text x='45' y='145' font-size='12' fill='#64748B'>Sodiated 1,3,2-dioxaphospholane (m/z 147)</text>
-</svg>"""
     },
     "Protonated Ethylene Phosphate": {
         "name": "Protonated Ethylene Phosphate",
         "theoretical_mz": 125.0009,
+        "smiles": "O=P1(O)OCCO1",
         "formula": "C2H6O4P+",
         "cleavage_mechanism": "포스포콜린 머리그룹에서 4차 암모늄 탈락 후 잔존한 5원자 환형 인산 에스테르 양이온",
         "reference": "Colsch et al. (Table 1a, Scheme 5b); Godzien et al. (Table 1)",
@@ -224,16 +136,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 125.1343, "rel_abundance": 0.32},
             "50eV": {"observed_mz": 125.0021, "rel_abundance": 1.00},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<polygon points='90,90 120,65 150,80 140,115 105,115' fill='none' stroke='#64748B' stroke-width='2'/>
-<text x='112' y='95' font-size='12' fill='#FF7F00' font-weight='bold'>P(=O)OH</text>
-<text x='65' y='145' font-size='12' fill='#DC2626'>[Excluded: Low Abundance]</text>
-</svg>"""
     },
     "Protonated Choline": {
         "name": "Protonated Choline",
         "theoretical_mz": 104.1070,
+        "smiles": "C[N+](C)(C)CCO",
         "formula": "C5H14NO+",
         "cleavage_mechanism": "5가 인 중간체 형성을 거친 분자내 수소 전이 기반의 콜린 양이온 형성",
         "reference": "Colsch et al. (Table 1a, Scheme 6b)",
@@ -246,16 +153,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 104.1071, "rel_abundance": 4.98},
             "50eV": {"observed_mz": 104.1070, "rel_abundance": 14.67},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<text x='35' y='95' font-size='13'>HO-CH₂-CH₂-</text>
-<text x='135' y='95' font-size='14' fill='#0000FF' font-weight='bold'>N⁺(CH₃)₃</text>
-<text x='70' y='145' font-size='12' fill='#64748B'>m/z 104.1070 (Choline cation)</text>
-</svg>"""
     },
     "Trimethyl vinyl ammonium": {
         "name": "Trimethyl vinyl ammonium",
         "theoretical_mz": 86.0964,
+        "smiles": "C=C[N+](C)(C)C",
         "formula": "C5H12N+",
         "cleavage_mechanism": "헤드그룹 인산 에스테르 C-O 결합 절단 및 비닐기 전이를 수반한 4차 암모늄 형성",
         "reference": "Colsch et al. (Scheme 5a); Al-Saad et al. (Table 1 Ion M, Scheme 7)",
@@ -268,16 +170,11 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 86.0969, "rel_abundance": 10.47},
             "50eV": {"observed_mz": 86.0971, "rel_abundance": 29.23},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<text x='45' y='95' font-size='13'>CH₂=CH-</text>
-<text x='115' y='95' font-size='14' fill='#0000FF' font-weight='bold'>N⁺(CH₃)₃</text>
-<text x='85' y='145' font-size='12' fill='#64748B'>m/z 86.0964 (TMVA)</text>
-</svg>"""
     },
     "Odd-electron Nitrogen ion": {
         "name": "Odd-electron Nitrogen ion",
         "theoretical_mz": 71.0730,
+        "smiles": "C[N+]1(C)C[CH]C1",
         "formula": "C4H9N+•",
         "cleavage_mechanism": "헤드그룹 4차 암모늄 부위 C-N 라디칼 절단 (dehydrogenated 1,1-dimethylazetidinium)",
         "reference": "Colsch et al. (Scheme 5a)",
@@ -290,18 +187,44 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 71.0855, "rel_abundance": 4.58},
             "50eV": {"observed_mz": 71.0862, "rel_abundance": 10.42},
         },
-        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
-<rect width='100%' height='100%' fill='white'/>
-<rect x='105' y='65' width='45' height='45' fill='none' stroke='#DC2626' stroke-width='2'/>
-<text x='110' y='95' font-size='12' fill='#0000FF'>N⁺(Me)₂</text>
-<text x='152' y='68' font-size='14' fill='#DC2626'>•</text>
-<text x='55' y='145' font-size='12' fill='#DC2626'>[Excluded: Literature Mismatch]</text>
-</svg>"""
-    }
+    },
 }
 
 # ==============================================================================
-# 3. 사이드바 인터페이스
+# 3. 진짜 RDKit 기반 실시간 SVG 렌더링 함수
+# ==============================================================================
+def draw_rdkit_svg(smiles_str: str, width=320, height=200) -> str:
+    mol = Chem.MolFromSmiles(smiles_str)
+    if mol is None:
+        return None
+    
+    # [*:1] -> R1, [*:2] -> R2 라벨을 RDKit 내부 속성에 직접 주입
+    for atom in mol.GetAtoms():
+        if atom.GetSymbol() == "*":
+            if atom.GetAtomMapNum() == 1:
+                atom.SetProp("atomLabel", "R1")
+            elif atom.GetAtomMapNum() == 2:
+                atom.SetProp("atomLabel", "R2")
+            else:
+                atom.SetProp("atomLabel", "R")
+                
+    # 순수 RDKit C++ 코어로 SVG 벡터를 직접 생성 (외부 Cairo/X11 라이브러리 미사용)
+    drawer = rdMolDraw2D.MolDraw2DSVG(width, height)
+    opts = drawer.drawOptions()
+    opts.bondLineWidth = 2.0
+    opts.legendFontSize = 14
+    opts.prepareMolsBeforeDrawing = True
+    
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+    
+    svg_text = drawer.GetDrawingText()
+    # XML 헤더 제거 후 순수 SVG 태그만 반환
+    start = svg_text.find("<svg")
+    return svg_text[start:] if start != -1 else svg_text
+
+# ==============================================================================
+# 4. 사이드바 인터페이스
 # ==============================================================================
 with st.sidebar:
     st.header("⚙️ 분석 파라미터")
@@ -313,14 +236,14 @@ with st.sidebar:
         value=0.0100,
         step=0.0005,
         format="%.4f",
-        help="슬라이더를 0으로 줄이면 오차가 큰 피크가 실시간으로 표와 카드에서 제외됩니다."
+        help="슬라이더를 0으로 줄이면 오차가 큰 피크가 실시간으로 제외됩니다."
     )
     
     st.markdown("---")
     validation_filter = st.toggle(
         "연구자 검증 필터 적용 (Researcher Validation)",
         value=True,
-        help="ON: 저강도(m/z 125) 및 문헌 불일치(m/z 71) 2종을 제외한 8종만 표시합니다."
+        help="ON: 제외 사유가 있는 2종(m/z 125, m/z 71)을 제외하고 8종만 표시합니다."
     )
     
     st.info(
@@ -330,7 +253,7 @@ with st.sidebar:
     )
 
 # ==============================================================================
-# 4. 실시간 데이터 필터링 & DataFrame 생성
+# 5. 실시간 데이터 필터링 & DataFrame 생성
 # ==============================================================================
 filtered_items = {}
 table_rows = []
@@ -357,7 +280,7 @@ for key, item in FRAGMENT_DATABASE.items():
 df_summary = pd.DataFrame(table_rows)
 
 # ==============================================================================
-# 5. 메인 화면 구성
+# 6. 메인 화면 구성
 # ==============================================================================
 st.title("🧪 Ether-PC CID MS/MS Fragmentation Dashboard")
 st.caption("Collision-Induced Dissociation Structural Annotation Platform for Ether-linked Phosphatidylcholines")
@@ -380,10 +303,10 @@ with tab1:
     if not df_summary.empty:
         st.dataframe(df_summary, use_container_width=True, hide_index=True)
     else:
-        st.warning(f"현재 설정된 허용 오차(±{tolerance:.4f} Da) 내에 매칭되는 Fragment가 없습니다. 슬라이더 값을 조정해 주세요.")
+        st.warning(f"현재 설정된 허용 오차(±{tolerance:.4f} Da) 내에 매칭되는 Fragment가 없습니다. 슬라이더 값을 올려주세요.")
     
     st.markdown("---")
-    st.subheader("🧩 RDKit 2D 화학 구조 분해 카드 그리드")
+    st.subheader("🧩 RDKit 2D 화학 구조 분해 카드 그리드 (Live RDKit Rendering)")
     
     if filtered_items:
         cols = st.columns(3)
@@ -397,11 +320,15 @@ with tab1:
                     if "609" in k:
                         st.success("🏷️ [Validated Structure: ESI-specific]")
                     
-                    # 화학 구조 SVG 렌더링
-                    st.markdown(
-                        f"<div style='text-align:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:4px;'>{item['svg']}</div>",
-                        unsafe_allow_html=True
-                    )
+                    # RDKit이 실시간으로 렌더링한 구조식 SVG 삽입
+                    rdkit_svg = draw_rdkit_svg(item["smiles"])
+                    if rdkit_svg:
+                        st.markdown(
+                            f"<div style='text-align:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:4px;'>{rdkit_svg}</div>",
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.warning("RDKit 파싱 실패")
                     
                     st.markdown(f"**개열 기작**: {item['cleavage_mechanism']}")
                     st.caption(f"**출처**: {item['reference']}")
@@ -466,7 +393,7 @@ with tab2:
         st.warning("선택 가능한 활성 Fragment가 없습니다.")
 
 # ==============================================================================
-# 6. 결과 내보내기 (CSV 다운로드 버튼)
+# 7. 결과 내보내기 (CSV 다운로드 버튼)
 # ==============================================================================
 st.markdown("---")
 col_exp1, col_exp2 = st.columns([8, 2])
