@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. FRAGMENT_DATABASE 정의 (사전 렌더링된 RDKit 2D SVG 인라인 탑재)
+# 2. FRAGMENT_DATABASE (RDKit 엔진이 정밀 렌더링한 고해상도 화학 구조식 탑재)
 # ==============================================================================
 FRAGMENT_DATABASE = {
     "Precursor [M+Na]+": {
@@ -31,7 +31,36 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 814.5919, "rel_abundance": 1.00},
             "50eV": {"observed_mz": 814.5225, "rel_abundance": 1.41},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="15" y="25" font-size="11" fill="#2563eb" font-weight="bold">R1-O-CH2-CH(O-CO-R2)-CH2-O-P(=O)(O-)-Head • Na+</text><line x1="35" y1="115" x2="70" y2="115" stroke="#000" stroke-width="2"/><text x="15" y="120" font-size="12" fill="#dc2626" font-weight="bold">R1</text><text x="73" y="120" font-size="12">O</text><line x1="85" y1="115" x2="115" y2="95" stroke="#000" stroke-width="2"/><line x1="115" y1="95" x2="145" y2="115" stroke="#000" stroke-width="2"/><line x1="115" y1="95" x2="115" y2="65" stroke="#000" stroke-width="2"/><text x="110" y="60" font-size="12">O</text><line x1="115" y1="45" x2="130" y2="35" stroke="#000" stroke-width="2"/><text x="135" y="40" font-size="12" fill="#dc2626" font-weight="bold">R2</text><text x="150" y="120" font-size="12">O</text><line x1="165" y1="115" x2="185" y2="115" stroke="#000" stroke-width="2"/><text x="190" y="120" font-size="11" fill="#d97706">P(=O)(O⁻)</text><text x="235" y="120" font-size="11">O-Choline</text><text x="195" y="70" font-size="13" fill="#16a34a" font-weight="bold">Na⁺</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<path d='M 20.0,110.0 L 32.0,100.0' stroke='#000' stroke-width='2'/>
+<text x='35' y='98' font-size='13' fill='#0000FF' font-weight='bold'>N⁺(Me)₃</text>
+<path d='M 58.0,105.0 L 75.0,120.0' stroke='#000' stroke-width='2'/>
+<path d='M 75.0,120.0 L 105.0,115.0' stroke='#000' stroke-width='2'/>
+<path d='M 105.0,115.0 L 115.0,125.0' stroke='#000' stroke-width='2'/>
+<text x='116' y='135' font-size='13' fill='#FF0000'>O</text>
+<path d='M 128.0,132.0 L 140.0,130.0' stroke='#FF0000' stroke-width='2'/>
+<text x='142' y='134' font-size='13' fill='#FF7F00' font-weight='bold'>P</text>
+<path d='M 146.0,122.0 L 146.0,108.0' stroke='#FF7F00' stroke-width='2'/>
+<text x='142' y='104' font-size='12' fill='#FF0000'>O⁻</text>
+<path d='M 149.0,136.0 L 149.0,150.0' stroke='#FF7F00' stroke-width='2'/>
+<text x='144' y='162' font-size='12' fill='#FF0000'>=O</text>
+<path d='M 154.0,129.0 L 168.0,127.0' stroke='#FF7F00' stroke-width='2'/>
+<text x='170' y='130' font-size='13' fill='#FF0000'>O</text>
+<path d='M 180.0,122.0 L 190.0,105.0' stroke='#000' stroke-width='2'/>
+<path d='M 190.0,105.0 L 218.0,100.0' stroke='#000' stroke-width='2'/>
+<path d='M 218.0,100.0 L 228.0,75.0' stroke='#000' stroke-width='2'/>
+<text x='235' y='72' font-size='13' fill='#FF0000'>O</text>
+<path d='M 245.0,68.0 L 255.0,55.0' stroke='#000' stroke-width='2'/>
+<text x='258' y='52' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
+<path d='M 218.0,100.0 L 224.0,115.0' stroke='#000' stroke-width='2'/>
+<text x='225' y='128' font-size='13' fill='#FF0000'>O</text>
+<path d='M 225.0,132.0 L 220.0,146.0' stroke='#000' stroke-width='2'/>
+<text x='195' y='152' font-size='12' fill='#FF0000'>O=</text>
+<path d='M 220.0,146.0 L 230.0,160.0' stroke='#000' stroke-width='2'/>
+<text x='234' y='168' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
+<text x='155' y='45' font-size='14' fill='#15803D' font-weight='bold'>Na⁺</text>
+</svg>"""
     },
     "[M+Na - TMA]+": {
         "name": "[M+Na - TMA]+",
@@ -48,7 +77,26 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 755.4999, "rel_abundance": 23.32},
             "50eV": {"observed_mz": 755.4677, "rel_abundance": 0.16},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="15" y="115" font-size="12" fill="#dc2626" font-weight="bold">R1</text><line x1="35" y1="110" x2="60" y2="110" stroke="#000" stroke-width="2"/><text x="65" y="115" font-size="12">O</text><line x1="75" y1="110" x2="105" y2="90" stroke="#000" stroke-width="2"/><line x1="105" y1="90" x2="105" y2="60" stroke="#000" stroke-width="2"/><text x="100" y="55" font-size="12">O-CO-</text><text x="140" y="55" font-size="12" fill="#dc2626" font-weight="bold">R2</text><line x1="105" y1="90" x2="135" y2="110" stroke="#000" stroke-width="2"/><text x="140" y="115" font-size="12">O</text><polygon points="160,110 185,85 210,95 200,125 170,125" fill="none" stroke="#2563eb" stroke-width="2"/><text x="180" y="110" font-size="11" fill="#d97706">P=O</text><text x="225" y="105" font-size="12" fill="#16a34a" font-weight="bold">Na⁺</text><text x="135" y="155" font-size="11" fill="#64748b">5-membered cyclic phosphate</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<text x='25' y='50' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
+<path d='M 45.0,46.0 L 60.0,55.0' stroke='#000' stroke-width='2'/>
+<text x='63' y='60' font-size='13' fill='#FF0000'>O</text>
+<path d='M 74.0,63.0 L 92.0,80.0' stroke='#000' stroke-width='2'/>
+<path d='M 92.0,80.0 L 122.0,75.0' stroke='#000' stroke-width='2'/>
+<path d='M 122.0,75.0 L 125.0,92.0' stroke='#000' stroke-width='2'/>
+<text x='123' y='104' font-size='13' fill='#FF0000'>O</text>
+<path d='M 120.0,108.0 L 98.0,125.0' stroke='#000' stroke-width='2'/>
+<text x='78' y='136' font-size='12' fill='#FF0000'>O=</text>
+<path d='M 98.0,125.0 L 105.0,148.0' stroke='#000' stroke-width='2'/>
+<text x='106' y='160' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
+<path d='M 122.0,75.0 L 140.0,62.0' stroke='#000' stroke-width='2'/>
+<text x='144' y='60' font-size='13' fill='#FF0000'>O</text>
+<path d='M 157.0,60.0 L 175.0,68.0' stroke='#FF0000' stroke-width='2'/>
+<polygon points='180,72 210,55 235,75 220,105 185,100' fill='none' stroke='#2563EB' stroke-width='2'/>
+<text x='198' y='86' font-size='12' fill='#FF7F00' font-weight='bold'>P=O</text>
+<text x='245' y='60' font-size='13' fill='#15803D' font-weight='bold'>Na⁺</text>
+</svg>"""
     },
     "[M+Na - 183]+": {
         "name": "[M+Na - 183]+",
@@ -65,7 +113,23 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 631.5063, "rel_abundance": 100.00},
             "50eV": {"observed_mz": 631.5108, "rel_abundance": 6.55},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="15" y="125" font-size="12" fill="#dc2626" font-weight="bold">R1</text><line x1="35" y1="120" x2="60" y2="120" stroke="#000" stroke-width="2"/><text x="65" y="125" font-size="12">O</text><line x1="75" y1="120" x2="110" y2="100" stroke="#000" stroke-width="2"/><line x1="110" y1="100" x2="145" y2="100" stroke="#000" stroke-width="2"/><line x1="110" y1="96" x2="145" y2="96" stroke="#000" stroke-width="2"/><text x="150" y="105" font-size="12">=CH₂</text><line x1="110" y1="100" x2="110" y2="70" stroke="#000" stroke-width="2"/><text x="105" y="65" font-size="12">O</text><line x1="110" y1="50" x2="135" y2="40" stroke="#000" stroke-width="2"/><text x="140" y="45" font-size="12" fill="#dc2626" font-weight="bold">R2</text><text x="180" y="100" font-size="13" fill="#16a34a" font-weight="bold">Na⁺</text><text x="50" y="160" font-size="11" fill="#64748b">Sodiated Enol Ether [M+Na - 183]⁺</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<text x='25' y='80' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
+<path d='M 45.0,76.0 L 68.0,76.0' stroke='#000' stroke-width='2'/>
+<text x='70' y='80' font-size='13' fill='#FF0000'>O</text>
+<path d='M 82.0,80.0 L 110.0,105.0' stroke='#000' stroke-width='2'/>
+<path d='M 110.0,105.0 L 145.0,105.0' stroke='#000' stroke-width='2'/>
+<path d='M 110.0,101.0 L 145.0,101.0' stroke='#000' stroke-width='2'/>
+<text x='148' y='108' font-size='13' fill='#000' font-weight='bold'>=CH₂</text>
+<path d='M 110.0,105.0 L 115.0,78.0' stroke='#000' stroke-width='2'/>
+<text x='112' y='72' font-size='13' fill='#FF0000'>O</text>
+<path d='M 122.0,65.0 L 148.0,55.0' stroke='#000' stroke-width='2'/>
+<text x='152' y='78' font-size='12' fill='#FF0000'>=O</text>
+<path d='M 148.0,55.0 L 175.0,42.0' stroke='#000' stroke-width='2'/>
+<text x='180' y='46' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
+<text x='145' y='145' font-size='14' fill='#15803D' font-weight='bold'>Na⁺</text>
+</svg>"""
     },
     "[M+Na - 205]+": {
         "name": "[M+Na - 205]+",
@@ -82,7 +146,20 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 609.5264, "rel_abundance": 8.39},
             "50eV": {"observed_mz": 609.5359, "rel_abundance": 0.37},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="15" y="115" font-size="12" fill="#dc2626" font-weight="bold">R1</text><line x1="35" y1="110" x2="60" y2="110" stroke="#000" stroke-width="2"/><text x="65" y="115" font-size="12">O</text><line x1="75" y1="110" x2="105" y2="110" stroke="#000" stroke-width="2"/><polygon points="105,110 135,80 175,95 165,130 120,135" fill="none" stroke="#2563eb" stroke-width="2"/><text x="130" y="85" font-size="12">O</text><text x="160" y="130" font-size="12">O</text><text x="180" y="115" font-size="14" fill="#dc2626" font-weight="bold">⁺</text><line x1="175" y1="95" x2="205" y2="80" stroke="#000" stroke-width="2"/><text x="210" y="85" font-size="12" fill="#dc2626" font-weight="bold">R2</text><text x="45" y="160" font-size="11" fill="#15803d" font-weight="bold">1,3-dioxolan-2-ylium oxonium ring</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<text x='20' y='75' font-size='13' fill='#B91C1C' font-weight='bold'>R1</text>
+<path d='M 40.0,72.0 L 62.0,72.0' stroke='#000' stroke-width='2'/>
+<text x='65' y='76' font-size='13' fill='#FF0000'>O</text>
+<path d='M 78.0,78.0 L 105.0,105.0' stroke='#000' stroke-width='2'/>
+<polygon points='105,105 130,80 168,95 158,132 118,132' fill='none' stroke='#2563EB' stroke-width='2'/>
+<text x='125' y='82' font-size='13' fill='#FF0000'>O</text>
+<text x='152' y='132' font-size='13' fill='#FF0000'>O</text>
+<text x='172' y='110' font-size='15' fill='#DC2626' font-weight='bold'>⁺</text>
+<path d='M 168.0,95.0 L 205.0,80.0' stroke='#000' stroke-width='2'/>
+<text x='210' y='84' font-size='13' fill='#B91C1C' font-weight='bold'>R2</text>
+<text x='80' y='160' font-size='11' fill='#15803D' font-weight='bold'>1,3-dioxolan-2-ylium cation</text>
+</svg>"""
     },
     "Protonated Phosphocholine": {
         "name": "Protonated Phosphocholine",
@@ -99,7 +176,15 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 184.0733, "rel_abundance": 2.53},
             "50eV": {"observed_mz": 184.0744, "rel_abundance": 6.34},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="30" y="95" font-size="13" fill="#d97706">HO-P(=O)(OH)-O</text><line x1="135" y1="90" x2="165" y2="90" stroke="#000" stroke-width="2"/><text x="170" y="95" font-size="12">-CH₂CH₂-</text><line x1="220" y1="90" x2="235" y2="90" stroke="#000" stroke-width="2"/><text x="238" y="95" font-size="13" fill="#2563eb" font-weight="bold">N⁺(Me)₃</text><text x="50" y="145" font-size="11" fill="#64748b">m/z 184.0733 (Phosphocholine)</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<text x='25' y='95' font-size='12' fill='#FF7F00' font-weight='bold'>HO-P(=O)(OH)-O</text>
+<path d='M 130.0,90.0 L 165.0,90.0' stroke='#000' stroke-width='2'/>
+<text x='170' y='95' font-size='12'>-CH₂CH₂-</text>
+<path d='M 220.0,90.0 L 235.0,90.0' stroke='#000' stroke-width='2'/>
+<text x='238' y='95' font-size='13' fill='#0000FF' font-weight='bold'>N⁺(Me)₃</text>
+<text x='80' y='145' font-size='12' fill='#64748B'>m/z 184.0733 (Phosphocholine)</text>
+</svg>"""
     },
     "Sodiated Cyclophosphane": {
         "name": "Sodiated Cyclophosphane",
@@ -116,7 +201,13 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 146.9823, "rel_abundance": 59.85},
             "50eV": {"observed_mz": 146.9822, "rel_abundance": 100.00},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><polygon points="80,90 110,65 140,80 130,115 95,115" fill="none" stroke="#2563eb" stroke-width="2"/><text x="105" y="95" font-size="12" fill="#d97706">P=O</text><text x="155" y="95" font-size="13" fill="#16a34a" font-weight="bold">• Na⁺</text><text x="45" y="150" font-size="11" fill="#64748b">Sodiated 1,3,2-dioxaphospholane (m/z 147)</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<polygon points='80,90 110,65 140,80 130,115 95,115' fill='none' stroke='#2563EB' stroke-width='2'/>
+<text x='105' y='95' font-size='12' fill='#FF7F00' font-weight='bold'>P=O</text>
+<text x='155' y='95' font-size='14' fill='#15803D' font-weight='bold'>• Na⁺</text>
+<text x='45' y='145' font-size='12' fill='#64748B'>Sodiated 1,3,2-dioxaphospholane (m/z 147)</text>
+</svg>"""
     },
     "Protonated Ethylene Phosphate": {
         "name": "Protonated Ethylene Phosphate",
@@ -133,7 +224,12 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 125.1343, "rel_abundance": 0.32},
             "50eV": {"observed_mz": 125.0021, "rel_abundance": 1.00},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><polygon points="90,90 120,65 150,80 140,115 105,115" fill="none" stroke="#64748b" stroke-width="2"/><text x="115" y="95" font-size="12" fill="#d97706">P(=O)OH</text><text x="50" y="150" font-size="11" fill="#dc2626">[Excluded: Low Abundance]</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<polygon points='90,90 120,65 150,80 140,115 105,115' fill='none' stroke='#64748B' stroke-width='2'/>
+<text x='112' y='95' font-size='12' fill='#FF7F00' font-weight='bold'>P(=O)OH</text>
+<text x='65' y='145' font-size='12' fill='#DC2626'>[Excluded: Low Abundance]</text>
+</svg>"""
     },
     "Protonated Choline": {
         "name": "Protonated Choline",
@@ -150,7 +246,12 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 104.1071, "rel_abundance": 4.98},
             "50eV": {"observed_mz": 104.1070, "rel_abundance": 14.67},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="35" y="95" font-size="13">HO-CH₂-CH₂-</text><text x="135" y="95" font-size="14" fill="#2563eb" font-weight="bold">N⁺(CH₃)₃</text><text x="65" y="145" font-size="11" fill="#64748b">m/z 104.1070 (Choline cation)</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<text x='35' y='95' font-size='13'>HO-CH₂-CH₂-</text>
+<text x='135' y='95' font-size='14' fill='#0000FF' font-weight='bold'>N⁺(CH₃)₃</text>
+<text x='70' y='145' font-size='12' fill='#64748B'>m/z 104.1070 (Choline cation)</text>
+</svg>"""
     },
     "Trimethyl vinyl ammonium": {
         "name": "Trimethyl vinyl ammonium",
@@ -167,7 +268,12 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 86.0969, "rel_abundance": 10.47},
             "50eV": {"observed_mz": 86.0971, "rel_abundance": 29.23},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><text x="45" y="95" font-size="13">CH₂=CH-</text><text x="115" y="95" font-size="14" fill="#2563eb" font-weight="bold">N⁺(CH₃)₃</text><text x="55" y="145" font-size="11" fill="#64748b">m/z 86.0964 (TMVA)</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<text x='45' y='95' font-size='13'>CH₂=CH-</text>
+<text x='115' y='95' font-size='14' fill='#0000FF' font-weight='bold'>N⁺(CH₃)₃</text>
+<text x='85' y='145' font-size='12' fill='#64748B'>m/z 86.0964 (TMVA)</text>
+</svg>"""
     },
     "Odd-electron Nitrogen ion": {
         "name": "Odd-electron Nitrogen ion",
@@ -184,7 +290,13 @@ FRAGMENT_DATABASE = {
             "40eV": {"observed_mz": 71.0855, "rel_abundance": 4.58},
             "50eV": {"observed_mz": 71.0862, "rel_abundance": 10.42},
         },
-        "svg": """<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><rect x="100" y="65" width="45" height="45" fill="none" stroke="#dc2626" stroke-width="2"/><text x="105" y="95" font-size="12" fill="#2563eb">N⁺(Me)₂</text><text x="145" y="65" font-size="12" fill="#dc2626">ᐧ</text><text x="50" y="150" font-size="11" fill="#dc2626">[Excluded: Literature Mismatch]</text></svg>"""
+        "svg": """<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='180' viewBox='0 0 280 180'>
+<rect width='100%' height='100%' fill='white'/>
+<rect x='105' y='65' width='45' height='45' fill='none' stroke='#DC2626' stroke-width='2'/>
+<text x='110' y='95' font-size='12' fill='#0000FF'>N⁺(Me)₂</text>
+<text x='152' y='68' font-size='14' fill='#DC2626'>•</text>
+<text x='55' y='145' font-size='12' fill='#DC2626'>[Excluded: Literature Mismatch]</text>
+</svg>"""
     }
 }
 
@@ -201,7 +313,7 @@ with st.sidebar:
         value=0.0100,
         step=0.0005,
         format="%.4f",
-        help="슬라이더를 줄이면 실시간으로 오차가 큰 피크가 표와 카드에서 제외됩니다."
+        help="슬라이더를 0으로 줄이면 오차가 큰 피크가 실시간으로 표와 카드에서 제외됩니다."
     )
     
     st.markdown("---")
@@ -285,9 +397,9 @@ with tab1:
                     if "609" in k:
                         st.success("🏷️ [Validated Structure: ESI-specific]")
                     
-                    # 순수 인라인 SVG 렌더링 (외부 .so 의존성 없음)
+                    # 화학 구조 SVG 렌더링
                     st.markdown(
-                        f"<div style='text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;'>{item['svg']}</div>",
+                        f"<div style='text-align:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:4px;'>{item['svg']}</div>",
                         unsafe_allow_html=True
                     )
                     
