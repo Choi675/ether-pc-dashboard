@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from rdkit import Chem
-from rdkit.Chem import Draw
-from PIL import Image
+from rdkit.Chem.Draw import rdMolDraw2D
 
 # ==============================================================================
 # 1. 페이지 환경설정
@@ -192,9 +191,9 @@ FRAGMENT_DATABASE = {
 }
 
 # ==============================================================================
-# 3. RDKit 2D 렌더링 헬퍼 함수
+# 3. RDKit 순수 SVG 렌더링 함수 (외부 C-라이브러리 불필요)
 # ==============================================================================
-def get_mol_image(smiles_str: str, size=(300, 220)) -> Image.Image:
+def render_mol_svg(smiles_str: str, size=(300, 200)) -> str:
     mol = Chem.MolFromSmiles(smiles_str)
     if mol is None:
         return None
@@ -206,7 +205,15 @@ def get_mol_image(smiles_str: str, size=(300, 220)) -> Image.Image:
                 atom.SetProp("atomLabel", "R2")
             else:
                 atom.SetProp("atomLabel", "R")
-    return Draw.MolToImage(mol, size=size)
+    
+    drawer = rdMolDraw2D.MolDraw2DSVG(size[0], size[1])
+    opts = drawer.drawOptions()
+    opts.bondLineWidth = 2.0
+    opts.legendFontSize = 14
+    opts.prepareMolsBeforeDrawing = True
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+    return drawer.GetDrawingText()
 
 # ==============================================================================
 # 4. 사이드바 인터페이스
@@ -221,14 +228,14 @@ with st.sidebar:
         value=0.0100,
         step=0.0005,
         format="%.4f",
-        help="슬라이더를 0으로 줄이면 오차가 큰 피크가 실시간으로 표와 그리드에서 제외됩니다."
+        help="슬라이더를 줄이면 실시간으로 오차가 큰 피크가 필터링됩니다."
     )
     
     st.markdown("---")
     validation_filter = st.toggle(
         "연구자 검증 필터 적용 (Researcher Validation)",
         value=True,
-        help="ON: 제외 사유가 있는 2종(m/z 125, m/z 71)을 제외하고 8종만 표시합니다."
+        help="ON: 저강도(m/z 125) 및 문헌 불일치(m/z 71) 2종을 제외한 8종만 표시합니다."
     )
     
     st.info(
@@ -244,11 +251,9 @@ filtered_items = {}
 table_rows = []
 
 for key, item in FRAGMENT_DATABASE.items():
-    # 1) 검증 필터 적용 여부
     if validation_filter and item["status"] == "Excluded":
         continue
     
-    # 2) Tolerance 실시간 필터 적용 (30eV 기준 오차)
     obs_30 = item["ce_profile"]["30eV"]["observed_mz"]
     delta_da = obs_30 - item["theoretical_mz"]
     
@@ -272,7 +277,6 @@ df_summary = pd.DataFrame(table_rows)
 st.title("🧪 Ether-PC CID MS/MS Fragmentation Dashboard")
 st.caption("Collision-Induced Dissociation Structural Annotation Platform for Ether-linked Phosphatidylcholines")
 
-# 타겟 지질 헤더 요약 정보
 header_col1, header_col2, header_col3 = st.columns([4, 4, 3])
 with header_col1:
     st.markdown("**Target Lipid**: Ether-linked PC (Plasmanyl/Plasmenyl)")
@@ -285,16 +289,13 @@ st.markdown("---")
 
 tab1, tab2 = st.tabs(["🔬 Fragment 매칭 & RDKit 2D 화학 구조", "📈 충돌 에너지(CE) 거동 분석"])
 
-# ------------------------------------------------------------------------------
-# 탭 1: Fragment 매칭 요약표 & RDKit 2D 구조 그리드
-# ------------------------------------------------------------------------------
 with tab1:
     st.subheader("📋 실시간 Fragment 매칭 결과 요약")
     
     if not df_summary.empty:
         st.dataframe(df_summary, use_container_width=True, hide_index=True)
     else:
-        st.warning(f"현재 설정된 허용 오차(±{tolerance:.4f} Da) 내에 매칭되는 Fragment가 없습니다. 슬라이더 값을 올려주세요.")
+        st.warning(f"현재 설정된 허용 오차(±{tolerance:.4f} Da) 내에 매칭되는 Fragment가 없습니다. 슬라이더 값을 조정해 주세요.")
     
     st.markdown("---")
     st.subheader("🧩 RDKit 2D 화학 구조 분해 카드 그리드")
@@ -305,22 +306,22 @@ with tab1:
             col = cols[idx % 3]
             with col:
                 with st.container(border=True):
-                    # 헤더 및 m/z
                     st.markdown(f"**{item['name']}**")
                     st.caption(f"이론 m/z: **{item['theoretical_mz']:.4f}** | 식: `{item['formula']}`")
                     
-                    # m/z 609.5242 검증 배지 표출
                     if "609" in k:
                         st.success("🏷️ [Validated Structure: ESI-specific]")
                     
-                    # RDKit 2D 렌더링
-                    img = get_mol_image(item["smiles"])
-                    if img is not None:
-                        st.image(img, use_container_width=True)
+                    # 순수 SVG 렌더링
+                    svg_markup = render_mol_svg(item["smiles"])
+                    if svg_markup is not None:
+                        st.markdown(
+                            f"<div style='text-align:center; background:#f8fafc; border-radius:8px; padding:10px;'>{svg_markup}</div>",
+                            unsafe_allow_html=True
+                        )
                     else:
                         st.warning("화학 구조 렌더링 불가")
                     
-                    # 기작 및 출처
                     st.markdown(f"**개열 기작**: {item['cleavage_mechanism']}")
                     st.caption(f"**출처**: {item['reference']}")
                     
@@ -329,9 +330,6 @@ with tab1:
     else:
         st.info("표시할 단편 구조 카드가 없습니다.")
 
-# ------------------------------------------------------------------------------
-# 탭 2: 충돌 에너지(CE: 30~50 eV) 거동 분석 인터랙티브 차트
-# ------------------------------------------------------------------------------
 with tab2:
     st.subheader("📈 Collision Energy (30 ~ 50 eV) Breakdown Curves")
     st.markdown("충돌 에너지 증가에 따른 단편 이온들의 상대강도(%) 변화를 추적합니다.")
@@ -386,9 +384,6 @@ with tab2:
     else:
         st.warning("선택 가능한 활성 Fragment가 없습니다.")
 
-# ==============================================================================
-# 7. 결과 내보내기 (CSV 다운로드 버튼)
-# ==============================================================================
 st.markdown("---")
 col_exp1, col_exp2 = st.columns([8, 2])
 
